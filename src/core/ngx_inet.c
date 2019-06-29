@@ -703,9 +703,10 @@ static ngx_int_t
 ngx_parse_unix_domain_url(ngx_pool_t *pool, ngx_url_t *u)
 {
 #if (NGX_HAVE_UNIX_DOMAIN)
-    u_char              *path, *uri, *last;
+    u_char              *path, *uri, *last, *new_path;
     size_t               len;
     struct sockaddr_un  *saun;
+    ngx_uint_t           i;
 
     len = u->url.len;
     path = u->url.data;
@@ -747,6 +748,33 @@ ngx_parse_unix_domain_url(ngx_pool_t *pool, ngx_url_t *u)
     u->addrs = ngx_pcalloc(pool, sizeof(ngx_addr_t));
     if (u->addrs == NULL) {
         return NGX_ERROR;
+    }
+
+    if (ngx_strncasecmp((u_char *)path + len - 4, (u_char *)"$id", 3) == 0) {
+        u->naddrs = ngx_worker_processes;
+        for(i = 0; i < ngx_worker_processes; i++) {
+            new_path = ngx_pcalloc(pool, u->url.len);
+            (void) ngx_memcpy(new_path, u->url.data, u->url.len);
+
+            saun = ngx_pcalloc(pool, sizeof(struct sockaddr_un));
+            if (saun == NULL) {
+                return NGX_ERROR;
+            }
+
+            saun->sun_family = AF_UNIX;
+            (void) ngx_cpystrn((u_char *) saun->sun_path, path, len);
+
+            ngx_snprintf((u_char *)saun->sun_path + len - 4, 3, "%03d", i);
+            (void) ngx_memcpy(new_path + u->url.len - 3,
+                              saun->sun_path + len - 4, 3);
+
+            u->addrs[i].sockaddr = (struct sockaddr *) saun;
+            u->addrs[i].socklen = sizeof(struct sockaddr_un);
+            u->addrs[i].name.len = u->url.len;
+            u->addrs[i].name.data = new_path;
+        }
+
+        return NGX_OK;
     }
 
     saun = ngx_pcalloc(pool, sizeof(struct sockaddr_un));

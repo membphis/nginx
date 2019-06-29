@@ -1479,6 +1479,7 @@ ngx_set_worker_processes(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     if (ngx_strcmp(value[1].data, "auto") == 0) {
         ccf->worker_processes = ngx_ncpu;
+        ngx_worker_processes = ccf->worker_processes;
         return NGX_CONF_OK;
     }
 
@@ -1488,6 +1489,7 @@ ngx_set_worker_processes(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return "invalid value";
     }
 
+    ngx_worker_processes = ccf->worker_processes;
     return NGX_CONF_OK;
 }
 

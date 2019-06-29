@@ -28,6 +28,7 @@ static void ngx_cache_manager_process_handler(ngx_event_t *ev);
 static void ngx_cache_loader_process_handler(ngx_event_t *ev);
 
 
+ngx_uint_t    ngx_worker_processes;
 ngx_uint_t    ngx_process;
 ngx_uint_t    ngx_worker;
 ngx_pid_t     ngx_pid;

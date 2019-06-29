@@ -38,6 +38,7 @@ void ngx_master_process_cycle(ngx_cycle_t *cycle);
 void ngx_single_process_cycle(ngx_cycle_t *cycle);
 
 
+extern ngx_uint_t      ngx_worker_processes;
 extern ngx_uint_t      ngx_process;
 extern ngx_uint_t      ngx_worker;
 extern ngx_pid_t       ngx_pid;
